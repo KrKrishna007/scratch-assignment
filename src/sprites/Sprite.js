@@ -13,7 +13,6 @@ const Sprite = ({
 }) => {
   if (!visible) return null;
 
-  // Main container style that includes positioning
   const containerStyle = {
     position: "absolute",
     transform: `translate(${x}px, ${y}px)`,
@@ -21,7 +20,6 @@ const Sprite = ({
     transition: "transform 0.3s ease",
   };
 
-  // Sprite rotation and sizing
   const spriteStyle = {
     transform: `rotate(${rotation}deg) scale(${size / 100})`,
     transformOrigin: "center",
