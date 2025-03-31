@@ -41,7 +41,6 @@ const Sprite = ({
     boxShadow: "0 2px 5px rgba(0,0,0,0.2)",
   };
 
-  // Triangle pointer styles
   const triangleStyle = {
     position: "absolute",
     left: "50%",

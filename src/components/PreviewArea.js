@@ -6,15 +6,22 @@ import PlusIcon from "../icons/PlusIcon";
 
 export default function PreviewArea() {
   const { flows, activeFlowId } = useFlowContext();
-  const { sprites, addSprite, removeSprite, updateSpriteState, getSprite, updateSpriteName } =
-    useSpritesContext();
+  const {
+    sprites,
+    addSprite,
+    removeSprite,
+    updateSpriteState,
+    getSprite,
+    updateSpriteName,
+  } = useSpritesContext();
 
   const [isExecuting, setIsExecuting] = useState(false);
   const [currentBlockIndex, setCurrentBlockIndex] = useState(-1);
   const [isAddingSpriteModalOpen, setIsAddingSpriteModalOpen] = useState(false);
   const [newSpriteName, setNewSpriteName] = useState("");
   const [newSpriteType, setNewSpriteType] = useState("cat");
-  const [isEditingSpriteModalOpen, setIsEditingSpriteModalOpen] = useState(false);
+  const [isEditingSpriteModalOpen, setIsEditingSpriteModalOpen] =
+    useState(false);
   const [editingSpriteId, setEditingSpriteId] = useState(null);
   const [editingSpriteName, setEditingSpriteName] = useState("");
   const [animationRepeatCount, setAnimationRepeatCount] = useState(0);
@@ -49,13 +56,23 @@ export default function PreviewArea() {
     }, duration);
   };
 
-  // Button actions - now taking a spriteId parameter
   const moveXBy50Action = (spriteId, spriteState) => {
-    return { ...spriteState, x: spriteState.x + 50 };
+    const viewportWidth = window.innerWidth;
+    const divWidthInPixels = viewportWidth * (3 / 5);
+    if (spriteState.x + 50 + 100 > divWidthInPixels) {
+      return { ...spriteState, x: 0 };
+    } else {
+      return { ...spriteState, x: spriteState.x + 50 };
+    }
   };
 
   const moveYBy50Action = (spriteId, spriteState) => {
-    return { ...spriteState, y: spriteState.y + 50 };
+    const viewportHeight = window.innerHeight;
+    if (spriteState.y + 50 + 200 > viewportHeight) {
+      return { ...spriteState, y: 0 };
+    } else {
+      return { ...spriteState, y: spriteState.y + 50 };
+    }
   };
 
   const turnAnticlockwise45Action = (spriteId, spriteState) => {
@@ -146,10 +163,15 @@ export default function PreviewArea() {
 
     const spriteBlocks = {};
     sprites.forEach((sprite) => {
-      spriteBlocks[sprite.id] = flow.blocks.filter((block) => block.targetSpriteId === sprite.id);
+      spriteBlocks[sprite.id] = flow.blocks.filter(
+        (block) => block.targetSpriteId === sprite.id
+      );
     });
 
-    const maxSteps = Math.max(...Object.values(spriteBlocks).map((blocks) => blocks.length), 0);
+    const maxSteps = Math.max(
+      ...Object.values(spriteBlocks).map((blocks) => blocks.length),
+      0
+    );
     if (maxSteps === 0) return [];
 
     const steps = [];
@@ -171,7 +193,11 @@ export default function PreviewArea() {
             const prevState = currentStepStates[sprite.id];
             const lastAction = lastActions[sprite.id];
 
-            const newState = actionMap[block.action](sprite.id, prevState, lastAction);
+            const newState = actionMap[block.action](
+              sprite.id,
+              prevState,
+              lastAction
+            );
 
             currentStepStates[sprite.id] = newState;
 
@@ -197,7 +223,6 @@ export default function PreviewArea() {
     const activeFlow = flows.find((f) => f.id === activeFlowId);
     if (!activeFlow || isExecuting) return;
 
-    // Pre-calculate all steps
     const steps = preCalculateSteps(activeFlow);
     if (steps.length === 0) return;
 
@@ -205,7 +230,6 @@ export default function PreviewArea() {
     setCurrentBlockIndex(-1);
     setAnimationRepeatCount(0);
 
-    // Apply initial state
     sprites.forEach((sprite) => {
       updateSpriteState(sprite.id, steps[0][sprite.id]);
     });
@@ -241,7 +265,9 @@ export default function PreviewArea() {
             sprites.forEach((sprite) => {
               const currentStepIndex = currentStep - 1;
               if (currentStepIndex >= 0 && currentStepIndex < steps.length) {
-                currentSpriteStates[sprite.id] = steps[currentStepIndex][sprite.id] || {
+                currentSpriteStates[sprite.id] = steps[currentStepIndex][
+                  sprite.id
+                ] || {
                   x: sprite.state.x,
                   y: sprite.state.y,
                   rotation: sprite.state.rotation,
@@ -263,7 +289,12 @@ export default function PreviewArea() {
               spritesToRepeat
             );
 
-            executeAnimationSequence(newSteps, 1, newRepeatCount, repeatingFlow);
+            executeAnimationSequence(
+              newSteps,
+              1,
+              newRepeatCount,
+              repeatingFlow
+            );
           }, 800);
         } else {
           executionTimeoutRef.current = setTimeout(runNextStep, 500);
@@ -276,24 +307,28 @@ export default function PreviewArea() {
 
     runNextStep();
   };
-
-  // Function to recalculate steps from the current state of sprites
-  const recalculateStepsFromCurrentState = (flow, currentSpriteStates, spritesToRepeat) => {
+  const recalculateStepsFromCurrentState = (
+    flow,
+    currentSpriteStates,
+    spritesToRepeat
+  ) => {
     if (!flow) return [];
 
-    // Use the current state as the initial state for calculation
     const initialStates = { ...currentSpriteStates };
 
-    // Group blocks by step and sprite
     const spriteBlocks = {};
     sprites.forEach((sprite) => {
-      // Only include blocks for sprites that should repeat if spritesToRepeat is provided
       if (!spritesToRepeat || spritesToRepeat.has(sprite.id)) {
-        spriteBlocks[sprite.id] = flow.blocks.filter((block) => block.targetSpriteId === sprite.id);
+        spriteBlocks[sprite.id] = flow.blocks.filter(
+          (block) => block.targetSpriteId === sprite.id
+        );
       }
     });
 
-    const maxSteps = Math.max(...Object.values(spriteBlocks).map((blocks) => blocks.length), 0);
+    const maxSteps = Math.max(
+      ...Object.values(spriteBlocks).map((blocks) => blocks.length),
+      0
+    );
     if (maxSteps === 0) return [];
 
     const steps = [];
@@ -320,7 +355,11 @@ export default function PreviewArea() {
               const prevState = currentStepStates[sprite.id];
               const lastAction = lastActions[sprite.id];
 
-              const newState = actionMap[block.action](sprite.id, prevState, lastAction);
+              const newState = actionMap[block.action](
+                sprite.id,
+                prevState,
+                lastAction
+              );
 
               currentStepStates[sprite.id] = newState;
 
@@ -439,7 +478,7 @@ export default function PreviewArea() {
         </button>
       </div>
 
-      <div className="flex-1 flex items-center justify-center relative bg-white rounded-lg mb-4 overflow-hidden w-full min-h-[400px] p-4">
+      <div className="flex-1 relative bg-white rounded-lg mb-4 overflow-hidden w-full min-h-[400px] p-4">
         {sprites.map((sprite, index) => (
           <div
             key={sprite.id}
@@ -462,18 +501,22 @@ export default function PreviewArea() {
           </div>
         ))}
 
-        {isExecuting && animationRepeatCount > 0 && repeatingSpriteIds.size === 0 && (
-          <div className="absolute top-2 right-2 bg-red-100 border border-red-400 text-red-800 px-2 py-1 rounded-md text-xs">
-            Repeat: {animationRepeatCount}
-          </div>
-        )}
+        {isExecuting &&
+          animationRepeatCount > 0 &&
+          repeatingSpriteIds.size === 0 && (
+            <div className="absolute top-2 right-2 bg-red-100 border border-red-400 text-red-800 px-2 py-1 rounded-md text-xs">
+              Repeat: {animationRepeatCount}
+            </div>
+          )}
       </div>
 
       <div className="mb-4">
         <div className="flex space-x-2 justify-center mb-2">
           <button
             onClick={executeFlow}
-            disabled={isExecuting || !activeFlow || activeFlow.blocks.length === 0}
+            disabled={
+              isExecuting || !activeFlow || activeFlow.blocks.length === 0
+            }
             className={`px-4 py-2 rounded ${
               isExecuting || !activeFlow || activeFlow.blocks.length === 0
                 ? "bg-gray-300 cursor-not-allowed"
@@ -483,7 +526,10 @@ export default function PreviewArea() {
             ▶ Play Flow
           </button>
           {isExecuting && (
-            <button onClick={stopExecution} className="px-4 py-2 rounded bg-red-500 text-white">
+            <button
+              onClick={stopExecution}
+              className="px-4 py-2 rounded bg-red-500 text-white"
+            >
               ■ Stop
             </button>
           )}
@@ -505,77 +551,6 @@ export default function PreviewArea() {
             Reset Sprites
           </button>
         </div>
-
-        {activeFlow && (
-          <div className="mt-2">
-            <h3 className="text-sm font-bold text-center mb-1">
-              Flow Blocks (Executing in Parallel):
-            </h3>
-            <p className="text-xs text-center text-gray-500 mb-2">
-              All actions at the same step will run simultaneously
-            </p>
-            <div className="bg-gray-100 p-2 rounded">
-              <div className="flex flex-col gap-3">
-                {(() => {
-                  const spriteBlocks = {};
-                  sprites.forEach((sprite) => {
-                    spriteBlocks[sprite.id] = activeFlow.blocks.filter(
-                      (block) => block.targetSpriteId === sprite.id
-                    );
-                  });
-
-                  const maxSteps = Math.max(
-                    ...Object.values(spriteBlocks).map((blocks) => blocks.length),
-                    0
-                  );
-
-                  return Array.from({ length: maxSteps }, (_, step) => {
-                    return (
-                      <div
-                        key={step}
-                        className={`flex gap-2 ${
-                          step === currentBlockIndex ? "bg-yellow-100 border border-yellow-400" : ""
-                        } p-2 rounded`}
-                      >
-                        <div className="text-xs font-medium text-gray-800 w-14 flex items-center">
-                          Step {step + 1}:
-                        </div>
-                        <div className="flex flex-wrap gap-2 flex-1">
-                          {sprites.map((sprite) => {
-                            const blocks = spriteBlocks[sprite.id];
-                            if (blocks && blocks[step]) {
-                              const block = blocks[step];
-                              return (
-                                <div
-                                  key={`${sprite.id}-${step}`}
-                                  className="flex items-center bg-white px-2 py-1 rounded shadow-sm"
-                                >
-                                  <span className="text-xs font-medium mr-1">{sprite.name}:</span>
-                                  <span
-                                    className={`text-xs px-1 py-0.5 rounded bg-${block.color}-200`}
-                                  >
-                                    {block.text}
-                                  </span>
-                                </div>
-                              );
-                            }
-                            return null;
-                          })}
-                          {!sprites.some((sprite) => {
-                            const blocks = spriteBlocks[sprite.id];
-                            return blocks && blocks[step];
-                          }) && (
-                            <div className="text-xs text-gray-400">No actions at this step</div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  });
-                })()}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {lastActionRef.current && (
@@ -589,7 +564,9 @@ export default function PreviewArea() {
           <div className="bg-white p-4 rounded-lg shadow-lg w-80">
             <h2 className="text-lg font-bold mb-4">Add New Sprite</h2>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sprite Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sprite Name
+              </label>
               <input
                 type="text"
                 value={newSpriteName}
@@ -598,7 +575,9 @@ export default function PreviewArea() {
               />
             </div>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sprite Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sprite Type
+              </label>
               <select
                 value={newSpriteType}
                 onChange={(e) => setNewSpriteType(e.target.value)}
@@ -609,7 +588,10 @@ export default function PreviewArea() {
               </select>
             </div>
             <div className="flex justify-end space-x-2">
-              <button onClick={handleCloseAddSpriteModal} className="px-4 py-2 border rounded-md">
+              <button
+                onClick={handleCloseAddSpriteModal}
+                className="px-4 py-2 border rounded-md"
+              >
                 Cancel
               </button>
               <button
@@ -628,7 +610,9 @@ export default function PreviewArea() {
           <div className="bg-white p-4 rounded-lg shadow-lg w-80">
             <h2 className="text-lg font-bold mb-4">Edit Sprite</h2>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Sprite Name</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Sprite Name
+              </label>
               <input
                 type="text"
                 value={editingSpriteName}
@@ -637,7 +621,10 @@ export default function PreviewArea() {
               />
             </div>
             <div className="flex justify-end space-x-2">
-              <button onClick={handleCloseEditSpriteModal} className="px-4 py-2 border rounded-md">
+              <button
+                onClick={handleCloseEditSpriteModal}
+                className="px-4 py-2 border rounded-md"
+              >
                 Cancel
               </button>
               <button
