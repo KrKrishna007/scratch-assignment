@@ -1,17 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import CatSprite from "./CatSprite";
 import BaseballSprite from "./BaseballSprite";
+import BearSprite from "./BearSprite";
+import PersonSprite from "./PersonSprite";
 
 const Sprite = ({
+  id,
   type = "cat",
   x = 0,
   y = 0,
   rotation = 0,
   size = 100,
+  updateSpriteState,
+  sayDuration = null,
   sayMessage = null,
   visible = true,
 }) => {
   if (!visible) return null;
+
+  const [message, setMessage] = useState("");
 
   const containerStyle = {
     position: "absolute",
@@ -71,17 +78,37 @@ const Sprite = ({
     switch (type) {
       case "baseball":
         return <BaseballSprite />;
-      case "cat":
+      case "bear":
+        return <BearSprite />;
+      case "person":
+        return <PersonSprite />;
       default:
         return <CatSprite />;
     }
   };
 
+  useEffect(() => {
+    if (sayMessage) {
+      setMessage(sayMessage);
+      if (sayDuration) {
+        setTimeout(() => {
+          setMessage("");
+          updateSpriteState(id, { sayMessage: null, sayDuration: null });
+        }, sayDuration);
+      } else {
+        setTimeout(() => {
+          setMessage("");
+          updateSpriteState(id, { sayMessage: null, sayDuration: null });
+        }, 400);
+      }
+    }
+  }, [sayMessage]);
+
   return (
     <div style={containerStyle}>
-      {sayMessage && (
+      {message && (
         <div style={speechBubbleStyle}>
-          {sayMessage}
+          {message}
           <div style={triangleBorderStyle}></div>
           <div style={triangleStyle}></div>
         </div>

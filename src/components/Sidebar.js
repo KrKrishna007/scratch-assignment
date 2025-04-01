@@ -51,26 +51,32 @@ export default function Sidebar() {
       color: "blue",
       action: "goToRandomPosition",
     },
+  ];
+
+  const greetingBlocks = [
     {
-      type: "motion",
+      type: "greetings",
       text: "Say Hello",
       color: "blue",
       action: "sayHello",
     },
     {
-      type: "motion",
+      type: "greetings",
       text: "Say Hello for 1 sec",
       color: "blue",
       action: "sayHelloFor1Sec",
     },
+  ];
+
+  const looksBlocks = [
     {
-      type: "motion",
+      type: "looks",
       text: "Increase Size",
       color: "blue",
       action: "increaseSize",
     },
     {
-      type: "motion",
+      type: "looks",
       text: "Decrease Size",
       color: "blue",
       action: "decreaseSize",
@@ -89,7 +95,9 @@ export default function Sidebar() {
   return (
     <div className="w-60 flex-none h-full overflow-y-auto flex flex-col items-start p-2 border-r border-gray-200">
       <div className="w-full mb-4">
-        <h3 className="font-bold text-sm uppercase text-gray-700 mb-2 px-1">Motion</h3>
+        <h3 className="font-bold text-sm uppercase text-gray-700 mb-2 px-1">
+          Motion
+        </h3>
         {motionBlocks.map((block, index) => (
           <DraggableBlock
             key={`motion-block-${index}`}
@@ -105,8 +113,48 @@ export default function Sidebar() {
         ))}
       </div>
 
+      <div className="w-full mb-4">
+        <h3 className="font-bold text-sm uppercase text-gray-700 mb-2 px-1">
+          Greetings
+        </h3>
+        {greetingBlocks.map((block, index) => (
+          <DraggableBlock
+            key={`motion-block-${index}`}
+            id={`motion-block-${index}`}
+            type={block.type}
+            text={block.text}
+            color={block.color}
+            iconName={block.iconName}
+            iconSize={block.iconSize}
+            iconClass={block.iconClass}
+            action={block.action}
+          />
+        ))}
+      </div>
+
+      <div className="w-full mb-4">
+        <h3 className="font-bold text-sm uppercase text-gray-700 mb-2 px-1">
+          Looks
+        </h3>
+        {looksBlocks.map((block, index) => (
+          <DraggableBlock
+            key={`motion-block-${index}`}
+            id={`motion-block-${index}`}
+            type={block.type}
+            text={block.text}
+            color={block.color}
+            iconName={block.iconName}
+            iconSize={block.iconSize}
+            iconClass={block.iconClass}
+            action={block.action}
+          />
+        ))}
+      </div>
+
       <div className="w-full">
-        <h3 className="font-bold text-sm uppercase text-gray-700 mb-2 px-1">Control</h3>
+        <h3 className="font-bold text-sm uppercase text-gray-700 mb-2 px-1">
+          Control
+        </h3>
         {controlBlocks.map((block, index) => (
           <DraggableBlock
             key={`control-block-${index}`}

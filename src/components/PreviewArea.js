@@ -43,62 +43,74 @@ export default function PreviewArea() {
     };
   }, []);
 
-  const saySomethingForDuration = (spriteId, message, duration) => {
-    updateSpriteState(spriteId, { sayMessage: message });
-
-    if (sayTimeoutRef.current[spriteId]) {
-      clearTimeout(sayTimeoutRef.current[spriteId]);
-    }
-
-    sayTimeoutRef.current[spriteId] = setTimeout(() => {
-      updateSpriteState(spriteId, { sayMessage: null });
-      sayTimeoutRef.current[spriteId] = null;
-    }, duration);
-  };
-
   const moveXBy50Action = (spriteId, spriteState) => {
     const viewportWidth = window.innerWidth;
     const divWidthInPixels = viewportWidth * (3 / 5);
     if (spriteState.x + 50 + 100 > divWidthInPixels) {
-      return { ...spriteState, x: 0 };
+      return { ...spriteState, x: 0, sayMessage: null };
     } else {
-      return { ...spriteState, x: spriteState.x + 50 };
+      return { ...spriteState, x: spriteState.x + 50, sayMessage: null };
     }
   };
 
   const moveYBy50Action = (spriteId, spriteState) => {
     const viewportHeight = window.innerHeight;
     if (spriteState.y + 50 + 200 > viewportHeight) {
-      return { ...spriteState, y: 0 };
+      return { ...spriteState, y: 0, sayMessage: null };
     } else {
-      return { ...spriteState, y: spriteState.y + 50 };
+      return { ...spriteState, y: spriteState.y + 50, sayMessage: null };
     }
   };
 
   const turnAnticlockwise45Action = (spriteId, spriteState) => {
-    return { ...spriteState, rotation: spriteState.rotation - 45 };
+    return {
+      ...spriteState,
+      rotation: spriteState.rotation - 45,
+      sayMessage: null,
+    };
   };
 
   const turnClockwise45Action = (spriteId, spriteState) => {
-    return { ...spriteState, rotation: spriteState.rotation + 45 };
+    return {
+      ...spriteState,
+      rotation: spriteState.rotation + 45,
+      sayMessage: null,
+    };
   };
 
   const goToOriginAction = (spriteId, spriteState) => {
-    return { ...spriteState, x: 0, y: 0 };
+    return { ...spriteState, x: 0, y: 0, sayMessage: null };
   };
 
   const rotate360Action = (spriteId, spriteState) => {
-    return { ...spriteState, rotation: spriteState.rotation + 360 };
+    return {
+      ...spriteState,
+      rotation: spriteState.rotation + 360,
+      sayMessage: null,
+    };
   };
 
   const moveXY50Action = (spriteId, spriteState) => {
-    return { ...spriteState, x: 50, y: 50 };
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    const divWidthInPixels = viewportWidth * (3 / 5);
+    if (
+      spriteState.y + 50 + 200 > viewportHeight ||
+      spriteState.x + 50 + 100 > divWidthInPixels
+    )
+      return { ...spriteState, x: 0, y: 0, sayMessage: null };
+    return {
+      ...spriteState,
+      x: spriteState.x + 50,
+      y: spriteState.y + 50,
+      sayMessage: null,
+    };
   };
 
   const goToRandomPositionAction = (spriteId, spriteState) => {
     const xPos = Math.floor(Math.random() * 300) - 150;
     const yPos = Math.floor(Math.random() * 300) - 150;
-    return { ...spriteState, x: xPos, y: yPos };
+    return { ...spriteState, x: xPos, y: yPos, sayMessage: null };
   };
 
   const sayHelloAction = (spriteId, spriteState) => {
@@ -106,20 +118,29 @@ export default function PreviewArea() {
   };
 
   const sayHelloFor1SecAction = (spriteId, spriteState) => {
-    return { ...spriteState, sayMessage: "Hello!" };
+    return {
+      ...spriteState,
+      sayMessage: "Hello!",
+      sayDuration: 1000,
+    };
   };
 
   const increaseSizeAction = (spriteId, spriteState) => {
-    return { ...spriteState, size: spriteState.size + 10 };
+    return { ...spriteState, size: spriteState.size + 10, sayMessage: null };
   };
 
   const decreaseSizeAction = (spriteId, spriteState) => {
-    return { ...spriteState, size: Math.max(10, spriteState.size - 10) };
+    return {
+      ...spriteState,
+      size: Math.max(10, spriteState.size - 10),
+      sayMessage: null,
+    };
   };
 
   const repeatWholeAnimationAction = (spriteId, spriteState) => {
     return {
       ...spriteState,
+      sayMessage: null,
       _shouldRepeat: true,
       _spriteToRepeat: spriteId,
     };
@@ -219,7 +240,7 @@ export default function PreviewArea() {
     return steps;
   };
 
-  const executeFlow = () => {
+  const executeFlow = async () => {
     const activeFlow = flows.find((f) => f.id === activeFlowId);
     if (!activeFlow || isExecuting) return;
 
@@ -234,20 +255,35 @@ export default function PreviewArea() {
       updateSpriteState(sprite.id, steps[0][sprite.id]);
     });
 
-    executeAnimationSequence(steps, 1, 0, activeFlow);
+    await executeAnimationSequence(steps, 1, 0, activeFlow);
   };
 
-  const executeAnimationSequence = (steps, startStep, repeatCount, flow) => {
+  const executeAnimationSequence = async (
+    steps,
+    startStep,
+    repeatCount,
+    flow
+  ) => {
     let currentStep = startStep;
 
-    const runNextStep = () => {
+    const runNextStep = async () => {
       if (currentStep < steps.length) {
         setCurrentBlockIndex(currentStep - 1);
 
+        const time = [];
         sprites.forEach((sprite) => {
           if (steps[currentStep][sprite.id]) {
             updateSpriteState(sprite.id, steps[currentStep][sprite.id]);
+            time.push(steps[currentStep][sprite.id]);
           }
+        });
+
+        const maxTime = Math.max(...time.map((t) => t.sayDuration || 0));
+
+        await new Promise((resolve, _) => {
+          setTimeout(() => {
+            resolve();
+          }, maxTime);
         });
 
         const spritesToRepeat = steps[currentStep].spritesToRepeat || new Set();
@@ -305,7 +341,7 @@ export default function PreviewArea() {
       }
     };
 
-    runNextStep();
+    await runNextStep();
   };
   const recalculateStepsFromCurrentState = (
     flow,
@@ -490,9 +526,12 @@ export default function PreviewArea() {
             onClick={() => handleSpriteClick(sprite.id)}
           >
             <Sprite
+              id={sprite.id}
               type={sprite.type}
               x={sprite.state.x}
               y={sprite.state.y}
+              updateSpriteState={updateSpriteState}
+              sayDuration={sprite.state.sayDuration}
               rotation={sprite.state.rotation}
               size={sprite.state.size}
               sayMessage={sprite.state.sayMessage}
@@ -585,6 +624,8 @@ export default function PreviewArea() {
               >
                 <option value="cat">Cat</option>
                 <option value="baseball">Baseball</option>
+                <option value="bear">Bear</option>
+                <option value="person">Person</option>
               </select>
             </div>
             <div className="flex justify-end space-x-2">

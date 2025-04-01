@@ -51,7 +51,9 @@ export const SpritesProvider = ({ children }) => {
   const removeSprite = (spriteId) => {
     if (sprites.length <= 1) return;
 
-    setSprites((prevSprites) => prevSprites.filter((sprite) => sprite.id !== spriteId));
+    setSprites((prevSprites) =>
+      prevSprites.filter((sprite) => sprite.id !== spriteId)
+    );
 
     if (activeSprite === spriteId) {
       setActiveSprite(sprites.find((sprite) => sprite.id !== spriteId)?.id);
